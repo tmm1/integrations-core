@@ -1,7 +1,7 @@
 extends:
 - _base.yaml
 metrics:
-# from _cisco_generic.yaml
+# from _cisco-generic.yaml
 - MIB: CISCO-FIREWALL-MIB
   metric_tags:
   - index: 1
