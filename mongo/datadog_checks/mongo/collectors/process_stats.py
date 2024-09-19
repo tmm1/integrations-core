@@ -49,13 +49,16 @@ class ProcessStatsCollector(MongoCollector):
     def _find_process_by_pid(self, pid):
         """Return the process object for a given PID, or None if not found."""
         try:
-            return psutil.Process(pid)
+            process = psutil.Process(pid)
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             self.log.warning("Process with PID %s not found or access denied.", pid)
             return None
 
     def _find_pid_by_name(self, process_name):
         """Find and return the PID of a process by its name."""
+        if not process_name:
+            self.log.warning("No process name provided.")
+            return None
         for process in psutil.process_iter(["pid", "name"]):
             if process.info["name"] == process_name:
                 return process.info["pid"]
@@ -71,7 +74,7 @@ class ProcessStatsCollector(MongoCollector):
         process = self._find_process_by_pid(pid) if pid else None
 
         # If process not found by PID, attempt to find it by process name
-        if not process and process_name:
+        if not process or process.name != process_name:
             pid = self._find_pid_by_name(process_name)
             if pid:
                 process = self._find_process_by_pid(pid)
