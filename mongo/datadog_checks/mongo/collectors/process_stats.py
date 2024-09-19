@@ -93,6 +93,6 @@ class ProcessStatsCollector(MongoCollector):
                 # the cpu_percent can be > 100% if the process has multiple threads
                 self._submit_payload({"system": {"cpu_percent": cpu_percent}})
             else:
-                self.log.warning("The MongoDB process with PID %s is not consuming CPU")
+                self.log.warning("The MongoDB process with PID %s is not consuming CPU", process.pid)
         except Exception as e:
-            self.log.error("Failed to collect process stats for MongoDB process with PID %s: %s", e)
+            self.log.error("Failed to collect process stats for MongoDB process with PID %s: %s", process.pid, e)
