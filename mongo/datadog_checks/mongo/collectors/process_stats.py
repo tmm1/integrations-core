@@ -25,6 +25,8 @@ class ProcessStatsCollector(MongoCollector):
 
     def compatible_with(self, deployment):
         # Can only be run on self-hosted MongoDB running on the same host as the Agent.
+        self.log.debug("Checking compatibility of the ProcessStatsCollector with %s, %s, %s",
+                       deployment.hosting_type, self._clean_server_name, self.is_localhost)
         return deployment.hosting_type == HostingType.SELF_HOSTED and self.is_localhost
 
     def _get_pid_and_name(self, api):
@@ -36,8 +38,11 @@ class ProcessStatsCollector(MongoCollector):
         try:
             pid, process_name = self._get_pid_and_name(api)
         except OperationFailure as e:
-            self.log.warning("Failed to get the PID of the mongod process: %s", e)
+            self.log.warning(
+                "Failed to get the PID of the mongod process: %s", e)
             return
+        self.log.info(
+            "Collecting process stats for the %s process with PID %s", process_name, pid)
 
         if pid:
             try:
@@ -45,9 +50,14 @@ class ProcessStatsCollector(MongoCollector):
                 cpu_percent = process.cpu_percent()
                 if cpu_percent != 0:
                     # the first call of cpu_percent is 0.0 and should be ignored
-                    self._submit_payload({"system": {"cpu_percent": cpu_percent}})
+                    self._submit_payload(
+                        {"system": {"cpu_percent": cpu_percent}})
+                else:
+                    self.log.warning(
+                        "The %s process with PID %s is not consuming CPU", process_name, pid)
             except psutil.NoSuchProcess:
-                self.log.warning("The %s process with PID %s is not running", process_name, pid)
+                self.log.warning(
+                    "The %s process with PID %s is not running", process_name, pid)
             except psutil.AccessDenied:
                 self.log.warning(
                     "The Agent does not have permission to collect process stats for the %s process with PID %s",
@@ -55,4 +65,5 @@ class ProcessStatsCollector(MongoCollector):
                     pid,
                 )
             except Exception as e:
-                self.log.error("Failed to collect process stats for %s process with PID %s: %s", process_name, pid, e)
+                self.log.error(
+                    "Failed to collect process stats for %s process with PID %s: %s", process_name, pid, e)
