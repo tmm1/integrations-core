@@ -23,6 +23,8 @@ class KubeVirtHandlerCheck(OpenMetricsBaseCheckV2):
     def check(self, _):
         # type: (Any) -> None
 
+        self._version = {}
+
         if self.kubevirt_handler_healthz_endpoint:
             self._report_health_check(self.kubevirt_handler_healthz_endpoint)
         else:
@@ -33,11 +35,16 @@ class KubeVirtHandlerCheck(OpenMetricsBaseCheckV2):
         super().check(_)
 
     def _report_health_check(self, health_endpoint):
+        self._version = {}
+
         try:
             self.log.debug("Checking health status at %s", health_endpoint)
             response = self.http.get(health_endpoint, verify=self.tls_verify)
             response.raise_for_status()
+            payload = response.json()
+            version = payload.get("apiserver").get("version")
             self.gauge("can_connect", 1, tags=[f"endpoint:{health_endpoint}", *self.base_tags])
+            self._version = version
         except Exception as e:
             self.log.error(
                 "Cannot connect to KubeVirt Handler HTTP endpoint '%s': %s.\n",
@@ -73,7 +80,30 @@ class KubeVirtHandlerCheck(OpenMetricsBaseCheckV2):
 
     def _configure_additional_transformers(self):
         metric_transformer = self.scrapers[self.kubevirt_handler_metrics_endpoint].metric_transformer
+        metric_transformer.add_custom_transformer("kubevirt_info", self.configure_metadata_transformer)
         metric_transformer.add_custom_transformer(r".*", self.configure_transformer_kubevirt_metrics(), pattern=True)
+
+    def configure_metadata_transformer(self, metric, sample_data, runtime_data):
+        """
+        Parse the kubevirt_info metric to extract the kubevirt version.
+        """
+        for sample, *_ in sample_data:
+            kubeversion = sample.labels["kubeversion"]
+            version_split = kubeversion[1:].split(".")
+
+            major = version_split[0]
+            minor = version_split[1]
+            patch = version_split[2]
+
+            version_raw = kubeversion
+
+            version_parts = {
+                "major": major,
+                "minor": minor,
+                "patch": patch,
+            }
+
+            self.set_metadata("version", version_raw, scheme="semver", part_map=version_parts)
 
     def configure_transformer_kubevirt_metrics(self):
         """
