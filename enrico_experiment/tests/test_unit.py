@@ -15,6 +15,8 @@ def test_check(dd_run_check, aggregator, instance):
     check = EnricoExperimentCheck('enrico_experiment', {}, [instance])
     dd_run_check(check)
 
+    aggregator.assert_metric('enrico_experiment.enric.directory.size')
+
     aggregator.assert_all_metrics_covered()
     aggregator.assert_metrics_using_metadata(get_metadata_metrics())
 

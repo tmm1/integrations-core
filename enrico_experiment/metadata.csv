@@ -1,1 +1,2 @@
 metric_name,metric_type,interval,unit_name,per_unit_name,description,orientation,integration,short_name,curated_metric,sample_tags
+enrico_experiment.enric.directory.size,gauge,,byte,,"Represents the size of a directory in bytes.",0,enrico,directory_size,false,"directory:path_name,env:prod"

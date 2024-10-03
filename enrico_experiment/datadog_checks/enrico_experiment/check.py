@@ -2,12 +2,32 @@
 # All rights reserved
 # Licensed under a 3-clause BSD style license (see LICENSE)
 from typing import Any  # noqa: F401
-
+import os
 from datadog_checks.base import AgentCheck  # noqa: F401
+
+# from datadog_checks_dev.datadog_checks.dev.tooling.manifest_utils import Agent
+
 
 # from datadog_checks.base.utils.db import QueryManager
 # from requests.exceptions import ConnectionError, HTTPError, InvalidURL, Timeout
 # from json import JSONDecodeError
+
+def get_directory_size(path):
+    if not os.path.exists(path):
+        raise FileNotFoundError("The directory `{directory}` does not exist")
+    if os.path.islink(path): # Skip symlinks for now
+        return 0
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(path):
+        for file in filenames:
+            file_path = os.path.join(dirpath, file)
+            try:
+                total_size += os.path.getsize(file_path)
+            except OSError:
+                # Ignore errors like deleted files or permissions issues
+                pass
+    return total_size
+
 
 
 class EnricoExperimentCheck(AgentCheck):
@@ -78,7 +98,21 @@ class EnricoExperimentCheck(AgentCheck):
         # This is how you submit metrics
         # There are different types of metrics that you can submit (gauge, event).
         # More info at https://datadoghq.dev/integrations-core/base/api/#datadog_checks.base.checks.base.AgentCheck
-        # self.gauge("test", 1.23, tags=['foo:bar'])
+
+        # breakpoint()
+
+        try:
+            directory_path = "."
+            directory_size = get_directory_size(directory_path)
+            self.gauge("enric.directory.size", directory_size)
+        except FileNotFoundError:
+            self.service_check("can_connect", AgentCheck.CRITICAL)
+            self.gauge("enric.directory.size", 0)
+            return
+        else:
+            self.service_check("can_connect", AgentCheck.OK)
+
+
 
         # Perform database queries using the Query Manager
         # self._query_manager.execute()
@@ -95,4 +129,4 @@ class EnricoExperimentCheck(AgentCheck):
         # self.service_check("can_connect", AgentCheck.OK)
 
         # If it didn't then it should send a critical service check
-        self.service_check("can_connect", AgentCheck.CRITICAL)
+        # self.service_check("can_connect", AgentCheck.CRITICAL)
