@@ -389,16 +389,16 @@ jobs:
           echo "Source directory exists: ${{ inputs.target }}/.junit"
           echo "Moving XML files to ${{ env.TEST_RESULTS_DIR }}"
           echo "Listing files in ${{ env.TEST_RESULTS_DIR }} before move:"
-          ls -la "${{ env.TEST_RESULTS_DIR }}"
+          ls -laR "${{ env.TEST_RESULTS_DIR }}"
           mv ${{ inputs.target }}/.junit/*.xml "${{ env.TEST_RESULTS_DIR }}"
           echo "Listing files in ${{ env.TEST_RESULTS_DIR }} after move:"
-          ls -la "${{ env.TEST_RESULTS_DIR }}"
+          ls -laR "${{ env.TEST_RESULTS_DIR }}"
         else
           echo ".junit directory does not exist in ${{ inputs.target }}"
         fi
         # Check env.TEST_RESULTS_BASE_DIR for test results
         echo "Listing files in ${{ env.TEST_RESULTS_BASE_DIR }}:"
-        ls -la "${{ env.TEST_RESULTS_BASE_DIR }}"
+        ls -laR "${{ env.TEST_RESULTS_BASE_DIR }}"
 
     - name: Upload test results
       if: always()

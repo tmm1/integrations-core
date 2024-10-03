@@ -4,7 +4,7 @@
 
 from datadog_checks.base import AgentCheck
 from datadog_checks.base.utils.time import get_timestamp
-from datadog_checks.cloudera.api.factory import make_api
+from datadog_checks.cloudera.api.factory import make_api # Adding comment to trigger CI for debugging
 
 from .common import CAN_CONNECT
 from .config_models import ConfigMixin
