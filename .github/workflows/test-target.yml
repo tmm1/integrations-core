@@ -406,7 +406,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "test-results-${{ inputs.target }}-${{ inputs.platform }}"
-        path: "${{ env.TEST_RESULTS_BASE_DIR }}/**/*"
+        path: "${{ env.TEST_RESULTS_BASE_DIR }}"
         include-hidden-files: true
 
     - name: Upload coverage data
