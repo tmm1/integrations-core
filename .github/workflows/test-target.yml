@@ -402,10 +402,10 @@ jobs:
 
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: "test-results-${{ inputs.target }}-${{ inputs.platform }}"
-        path: "${{ env.TEST_RESULTS_BASE_DIR }}/**/*"
+        path: "${{ env.TEST_RESULTS_BASE_DIR }}"
 
     - name: Upload coverage data
       if: >
