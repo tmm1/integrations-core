@@ -406,7 +406,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "test-results-${{ inputs.target }}-${{ inputs.platform }}"
-        path: "${{ env.TEST_RESULTS_BASE_DIR }}/Cloudera"
+        path: "${{ env.TEST_RESULTS_BASE_DIR }}/**/*.xml"
 
     - name: Upload coverage data
       if: >
