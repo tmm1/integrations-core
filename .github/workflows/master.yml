@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    - fix_ci_no_artifact_uploaded_warning
 
 jobs:
   cache:
